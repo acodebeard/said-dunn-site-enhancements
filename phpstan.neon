@@ -1,0 +1,11 @@
+parameters:
+  level: 6
+  paths:
+    - said-dunn-site-enhancements
+  bootstrapFiles:
+    - tools/phpstan-bootstrap.php
+  scanFiles:
+    - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+  excludePaths:
+    analyse:
+      - vendor

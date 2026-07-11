@@ -1,0 +1,29 @@
+{
+  "name": "acodebeard/said-dunn-site-enhancements",
+  "description": "Development tooling for the Said & Dunn Site Enhancements WordPress plugin.",
+  "type": "project",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "acodebeard",
+      "homepage": "https://github.com/acodebeard"
+    }
+  ],
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": false
+    }
+  },
+  "require": {
+    "php": ">=7.4"
+  },
+  "require-dev": {
+    "php-stubs/wordpress-stubs": "^7.0",
+    "phpstan/phpstan": "^2.2",
+    "wp-coding-standards/wpcs": "^3.3"
+  },
+  "scripts": {
+    "phpcs": "phpcs --standard=phpcs.xml.dist",
+    "phpstan": "phpstan analyse --configuration phpstan.neon --no-progress"
+  }
+}

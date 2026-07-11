@@ -1,0 +1,74 @@
+/**
+ * Accessible Featured Slider Controls.
+ *
+ * Styles are intentionally scoped to markup inserted by this module so they
+ * do not restyle the theme's slider, slides, or existing navigation.
+ */
+
+.sdse-slider-controls {
+	display: flex;
+	position: relative;
+	z-index: 2;
+	align-items: center;
+	justify-content: flex-end;
+	margin-block: 0.5rem;
+	font: inherit;
+}
+
+.sdse-slider-toggle {
+	-webkit-appearance: none;
+	appearance: none;
+	min-block-size: 2.75rem;
+	padding: 0.55em 0.8em;
+	border: 2px solid currentColor;
+	border-radius: 0.2rem;
+	background: #1f1f1f;
+	box-shadow: none;
+	color: #fff;
+	cursor: pointer;
+	font: inherit;
+	font-weight: 600;
+	line-height: 1.2;
+	text-align: center;
+	text-decoration: none;
+}
+
+.sdse-slider-toggle:hover {
+	background: #fff;
+	color: #1f1f1f;
+}
+
+.sdse-slider-toggle:focus {
+	outline: 3px solid #ffbf47;
+	outline-offset: 2px;
+}
+
+.sdse-slider-toggle:focus:not(:focus-visible) {
+	outline: 0;
+}
+
+.sdse-slider-toggle:focus-visible {
+	outline: 3px solid #ffbf47;
+	outline-offset: 2px;
+}
+
+.sdse-screen-reader-text {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	margin: -1px !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	clip: rect(0, 0, 0, 0) !important;
+	clip-path: inset(50%) !important;
+	border: 0 !important;
+	white-space: nowrap !important;
+}
+
+@media (forced-colors: active) {
+	.sdse-slider-toggle {
+		border-color: ButtonText;
+		background: ButtonFace;
+		color: ButtonText;
+	}
+}
