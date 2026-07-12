@@ -549,8 +549,14 @@
 	 */
 	function updateToggle( state ) {
 		state.button.textContent = state.paused ?
-			getLabel( 'play', 'Play slideshow' ) :
-			getLabel( 'pause', 'Pause slideshow' );
+			getLabel( 'play', 'Play' ) :
+			getLabel( 'pause', 'Pause' );
+		state.button.setAttribute(
+			'aria-label',
+			state.paused ?
+				getLabel( 'playLabel', 'Play slideshow' ) :
+				getLabel( 'pauseLabel', 'Pause slideshow' )
+		);
 	}
 
 	/**

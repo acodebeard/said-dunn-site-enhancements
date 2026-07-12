@@ -64,9 +64,11 @@ async function createPage( { broken = false, supported = true, reducedMotion = f
 		labels: {
 			carousel: 'carousel',
 			next: 'Next slide',
-			pause: 'Pause slideshow',
+			pause: 'Pause',
+			pauseLabel: 'Pause slideshow',
 			paused: 'Slideshow paused.',
-			play: 'Play slideshow',
+			play: 'Play',
+			playLabel: 'Play slideshow',
 			playing: 'Slideshow playing.',
 			previous: 'Previous slide',
 			reducedMotionPause: 'Reduced motion pause.',
@@ -101,15 +103,18 @@ test( 'enhances direction controls and connects a verified pause API', async () 
 	assert.equal( previous.getAttribute( 'role' ), 'button' );
 	assert.equal( previous.getAttribute( 'tabindex' ), '0' );
 	assert.equal( next.getAttribute( 'aria-label' ), 'Next slide' );
-	assert.equal( toggle.textContent, 'Pause slideshow' );
+	assert.equal( toggle.textContent, 'Pause' );
+	assert.equal( toggle.getAttribute( 'aria-label' ), 'Pause slideshow' );
 
 	toggle.click();
 	assert.equal( page.calls.pause, 1 );
-	assert.equal( toggle.textContent, 'Play slideshow' );
+	assert.equal( toggle.textContent, 'Play' );
+	assert.equal( toggle.getAttribute( 'aria-label' ), 'Play slideshow' );
 
 	toggle.click();
 	assert.equal( page.calls.play, 1 );
-	assert.equal( toggle.textContent, 'Pause slideshow' );
+	assert.equal( toggle.textContent, 'Pause' );
+	assert.equal( toggle.getAttribute( 'aria-label' ), 'Pause slideshow' );
 
 	page.root.appendChild( page.window.document.createElement( 'span' ) );
 	await page.flush();
@@ -133,7 +138,7 @@ test( 'starts a supported autoplay slider paused when reduced motion is requeste
 	const toggle = page.root.querySelector( '.sdse-slider-toggle' );
 
 	assert.equal( page.calls.pause, 1 );
-	assert.equal( toggle.textContent, 'Play slideshow' );
+	assert.equal( toggle.textContent, 'Play' );
 
 } );
 
@@ -143,14 +148,14 @@ test( 'pauses on hover and does not resume after a persistent pause', async () =
 
 	page.root.dispatchEvent( new page.window.Event( 'mouseenter' ) );
 	assert.equal( page.calls.pause, 1 );
-	assert.equal( toggle.textContent, 'Pause slideshow' );
+	assert.equal( toggle.textContent, 'Pause' );
 
 	page.root.dispatchEvent( new page.window.Event( 'mouseleave' ) );
 	assert.equal( page.calls.play, 1 );
 
 	toggle.click();
 	assert.equal( page.calls.pause, 2 );
-	assert.equal( toggle.textContent, 'Play slideshow' );
+	assert.equal( toggle.textContent, 'Play' );
 
 	page.root.dispatchEvent( new page.window.Event( 'mouseenter' ) );
 	page.root.dispatchEvent( new page.window.Event( 'mouseleave' ) );
@@ -208,9 +213,11 @@ test( 'integrates with the BlogData homemain Swiper slider', async () => {
 		labels: {
 			carousel: 'carousel',
 			next: 'Next slide',
-			pause: 'Pause slideshow',
+			pause: 'Pause',
+			pauseLabel: 'Pause slideshow',
 			paused: 'Slideshow paused.',
-			play: 'Play slideshow',
+			play: 'Play',
+			playLabel: 'Play slideshow',
 			playing: 'Slideshow playing.',
 			previous: 'Previous slide',
 			resumeAfterHover: 'Resume after hover.',
@@ -247,7 +254,8 @@ test( 'integrates with the BlogData homemain Swiper slider', async () => {
 	assert.equal( root.getAttribute( 'aria-label' ), 'Featured content slider' );
 	assert.equal( root.querySelector( '.swiper-button-prev' ).getAttribute( 'aria-label' ), 'Previous slide' );
 	assert.equal( root.querySelector( '.swiper-button-next' ).getAttribute( 'aria-label' ), 'Next slide' );
-	assert.equal( toggle.textContent, 'Pause slideshow' );
+	assert.equal( toggle.textContent, 'Pause' );
+	assert.equal( toggle.getAttribute( 'aria-label' ), 'Pause slideshow' );
 	assert.equal( root.swiper.params.autoplay.delay, 7000 );
 	assert.equal( calls.stop, 1 );
 	assert.equal( calls.start, 1 );
@@ -280,9 +288,11 @@ test( 'integrates with the BlogData homemain Swiper slider', async () => {
 	toggle.click();
 	assert.equal( calls.stop, 2 );
 	assert.equal( calls.pause, 0 );
-	assert.equal( toggle.textContent, 'Play slideshow' );
+	assert.equal( toggle.textContent, 'Play' );
+	assert.equal( toggle.getAttribute( 'aria-label' ), 'Play slideshow' );
 
 	toggle.click();
 	assert.equal( calls.start, 2 );
-	assert.equal( toggle.textContent, 'Pause slideshow' );
+	assert.equal( toggle.textContent, 'Pause' );
+	assert.equal( toggle.getAttribute( 'aria-label' ), 'Pause slideshow' );
 } );

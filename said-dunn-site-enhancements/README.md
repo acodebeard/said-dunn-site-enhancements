@@ -61,8 +61,8 @@ On a page containing the featured slider:
 1. Confirm that existing Previous and Next controls still change slides.
 2. Navigate using only the keyboard and verify every visible control has a clear
    focus indicator and activates with its normal key behavior.
-3. If the slider advances automatically, confirm that **Pause slideshow** stops
-   it and changes to **Play slideshow**.
+3. If the slider advances automatically, confirm that **Pause** stops it and
+   changes to **Play**.
 4. Turn on the operating system's reduced-motion preference, reload the page,
    and confirm supported autoplay starts paused.
 5. Check a normal interior page and confirm the module's stylesheet and script
@@ -92,6 +92,8 @@ assets under `assets/`. Register the class in the small modules array in
 
 - Limited keyboard navigation to links and controls in the current slide.
 - Restored theme-supplied tab-order values when a slide becomes current.
+- Shortened the visible slideshow toggle text to **Pause** and **Play** while
+  retaining descriptive screen-reader labels.
 
 ### 1.0.2
 
