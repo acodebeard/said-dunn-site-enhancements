@@ -21,14 +21,16 @@ When enabled, this module loads only on the front page and posts page. It:
 - Gives the slider a region name when the theme has not provided one.
 - Adds accessible names and `aria-controls` relationships to recognized
   Previous and Next controls without replacing existing theme wording.
-- Makes non-native direction controls keyboard operable while preserving native
-  links and buttons.
+- Places native buttons inside non-native direction-control containers while
+  preserving the theme's existing click behavior.
 - Keeps links and controls in inactive slides, including looped clones, out of
   the keyboard tab order and restores them when their slide becomes current.
 - Adds a visible Pause/Play button only when a real, supported autoplay API is
   present.
 - Pauses autoplay while a pointer is over the slider and resumes on pointer
   leave unless the visitor selected a persistent pause.
+- Pauses autoplay while keyboard focus is anywhere inside the slider and
+  resumes only after focus leaves unless a persistent pause is active.
 - Uses a seven-second autoplay delay for BlogData's featured slider so visitors
   have more time to read each slide.
 - Pauses supported autoplay for visitors whose operating system requests
@@ -94,6 +96,8 @@ assets under `assets/`. Register the class in the small modules array in
 - Restored theme-supplied tab-order values when a slide becomes current.
 - Shortened the visible slideshow toggle text to **Pause** and **Play** while
   retaining descriptive screen-reader labels.
+- Added native Previous/Next buttons and visible keyboard focus indicators.
+- Paused autoplay whenever keyboard focus is inside the slider.
 
 ### 1.0.2
 

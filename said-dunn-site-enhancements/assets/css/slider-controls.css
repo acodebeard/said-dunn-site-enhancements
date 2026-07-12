@@ -15,9 +15,30 @@
 	font: inherit;
 }
 
-.sdse-slider-toggle {
+.sdse-slider-toggle,
+.sdse-direction-button {
 	-webkit-appearance: none;
 	appearance: none;
+	font: inherit;
+}
+
+.sdse-direction-button {
+	display: flex;
+	inline-size: 100%;
+	block-size: 100%;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: inherit;
+	background: transparent;
+	box-shadow: none;
+	color: inherit;
+	cursor: pointer;
+}
+
+.sdse-slider-toggle {
 	min-block-size: 2.75rem;
 	padding: 0.55em 0.8em;
 	border: 2px solid currentColor;
@@ -26,7 +47,6 @@
 	box-shadow: none;
 	color: #fff;
 	cursor: pointer;
-	font: inherit;
 	font-weight: 600;
 	line-height: 1.2;
 	text-align: center;
@@ -38,16 +58,19 @@
 	color: #1f1f1f;
 }
 
-.sdse-slider-toggle:focus {
+.sdse-slider-toggle:focus,
+.sdse-direction-button:focus {
 	outline: 3px solid #ffbf47;
 	outline-offset: 2px;
 }
 
-.sdse-slider-toggle:focus:not(:focus-visible) {
+.sdse-slider-toggle:focus:not(:focus-visible),
+.sdse-direction-button:focus:not(:focus-visible) {
 	outline: 0;
 }
 
-.sdse-slider-toggle:focus-visible {
+.sdse-slider-toggle:focus-visible,
+.sdse-direction-button:focus-visible {
 	outline: 3px solid #ffbf47;
 	outline-offset: 2px;
 }
@@ -66,7 +89,8 @@
 }
 
 @media (forced-colors: active) {
-	.sdse-slider-toggle {
+	.sdse-slider-toggle,
+	.sdse-direction-button {
 		border-color: ButtonText;
 		background: ButtonFace;
 		color: ButtonText;

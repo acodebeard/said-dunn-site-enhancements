@@ -285,30 +285,46 @@
 	}
 
 	/**
-	 * Adds keyboard activation only to non-native controls.
+	 * Returns a native interactive element for one direction control.
 	 *
-	 * @param {Element} control Control element.
+	 * Theme-owned outer elements remain in place so their click handlers keep
+	 * working. Clicks from an inserted button bubble to the original element.
+	 *
+	 * @param {Element} control Existing direction control.
+	 * @return {Element} Native control to enhance.
 	 */
-	function addKeyboardActivation( control ) {
-		if ( isNativeControl( control ) || 'true' === control.dataset.sdseKeyboard ) {
-			return;
+	function getNativeDirectionControl( control ) {
+		if ( isNativeControl( control ) ) {
+			return control;
 		}
 
-		control.setAttribute( 'role', 'button' );
-		if ( ! control.hasAttribute( 'tabindex' ) ) {
-			control.setAttribute( 'tabindex', '0' );
+		var existingButton = control.querySelector( ':scope > .sdse-direction-button' );
+		if ( existingButton ) {
+			return existingButton;
 		}
 
-		control.addEventListener( 'keydown', function ( event ) {
-			if ( 'Enter' !== event.key && ' ' !== event.key ) {
-				return;
+		var nestedControls = control.querySelectorAll( 'button, input, a[href]' );
+		for ( var index = 0; index < nestedControls.length; index += 1 ) {
+			if ( isNativeControl( nestedControls[ index ] ) ) {
+				return nestedControls[ index ];
 			}
+		}
 
-			event.preventDefault();
-			control.click();
-		} );
+		var button = document.createElement( 'button' );
+		button.className = 'sdse-direction-button';
+		button.type = 'button';
 
-		control.dataset.sdseKeyboard = 'true';
+		while ( control.firstChild ) {
+			button.appendChild( control.firstChild );
+		}
+
+		control.appendChild( button );
+		if ( 'button' === control.getAttribute( 'role' ) ) {
+			control.removeAttribute( 'role' );
+		}
+		control.removeAttribute( 'tabindex' );
+
+		return button;
 	}
 
 	/**
@@ -319,19 +335,28 @@
 	 * @param {string}  controls Slider root ID.
 	 */
 	function enhanceDirectionControl( control, label, controls ) {
-		if ( 'button' === control.tagName.toLowerCase() && ! control.hasAttribute( 'type' ) ) {
-			control.setAttribute( 'type', 'button' );
+		var nativeControl = getNativeDirectionControl( control );
+
+		if ( 'button' === nativeControl.tagName.toLowerCase() && ! nativeControl.hasAttribute( 'type' ) ) {
+			nativeControl.setAttribute( 'type', 'button' );
 		}
 
-		if ( ! hasAccessibleName( control ) ) {
-			control.setAttribute( 'aria-label', label );
+		if ( ! hasAccessibleName( nativeControl ) ) {
+			if ( nativeControl !== control && control.getAttribute( 'aria-label' ) ) {
+				nativeControl.setAttribute( 'aria-label', control.getAttribute( 'aria-label' ) );
+			} else if ( nativeControl !== control && control.getAttribute( 'aria-labelledby' ) ) {
+				nativeControl.setAttribute( 'aria-labelledby', control.getAttribute( 'aria-labelledby' ) );
+			} else {
+				nativeControl.setAttribute( 'aria-label', label );
+			}
 		}
 
-		if ( ! control.hasAttribute( 'aria-controls' ) ) {
-			control.setAttribute( 'aria-controls', controls );
+		if ( ! nativeControl.hasAttribute( 'aria-controls' ) ) {
+			nativeControl.setAttribute(
+				'aria-controls',
+				control.getAttribute( 'aria-controls' ) || controls
+			);
 		}
-
-		addKeyboardActivation( control );
 	}
 
 	/**
@@ -582,9 +607,12 @@
 		try {
 			if ( paused ) {
 				state.adapter.pause();
-			} else if ( state.hovered ) {
-				state.hoverPaused = true;
-				message = getLabel( 'resumeAfterHover', 'Slideshow will resume when the pointer leaves.' );
+			} else if ( state.hovered || state.focused ) {
+				state.interactionPaused = true;
+				message = getLabel(
+					'resumeAfterInteraction',
+					'Slideshow will resume when focus and the pointer leave.'
+				);
 			} else {
 				state.adapter.play();
 			}
@@ -607,36 +635,33 @@
 	}
 
 	/**
-	 * Temporarily pauses autoplay while a pointer is over the slider.
+	 * Temporarily pauses autoplay while a pointer or keyboard focus is inside.
 	 *
-	 * A manual or reduced-motion pause remains in force after the pointer leaves.
+	 * A manual or reduced-motion pause remains in force after focus and the
+	 * pointer leave.
 	 *
 	 * @param {Object} state Module state for one slider.
 	 */
-	function addHoverBehavior( state ) {
-		var pauseForHover = function () {
-			state.hovered = true;
-
-			if ( state.paused || state.hoverPaused ) {
+	function addInteractionPauseBehavior( state ) {
+		var pauseForInteraction = function () {
+			if ( state.paused || state.interactionPaused ) {
 				return;
 			}
 
 			try {
 				state.adapter.pause();
-				state.hoverPaused = true;
+				state.interactionPaused = true;
 			} catch ( error ) {
 				removeFailedControl( state );
 			}
 		};
 
-		var resumeAfterHover = function () {
-			state.hovered = false;
-
-			if ( ! state.hoverPaused ) {
+		var resumeAfterInteraction = function () {
+			if ( state.hovered || state.focused || ! state.interactionPaused ) {
 				return;
 			}
 
-			state.hoverPaused = false;
+			state.interactionPaused = false;
 
 			if ( state.paused ) {
 				return;
@@ -649,11 +674,35 @@
 			}
 		};
 
-		state.root.addEventListener( 'mouseenter', pauseForHover );
-		state.root.addEventListener( 'mouseleave', resumeAfterHover );
+		state.root.addEventListener( 'mouseenter', function () {
+			state.hovered = true;
+			pauseForInteraction();
+		} );
+		state.root.addEventListener( 'mouseleave', function () {
+			state.hovered = false;
+			resumeAfterInteraction();
+		} );
+		state.root.addEventListener( 'focusin', function () {
+			state.focused = true;
+			pauseForInteraction();
+		} );
+		state.root.addEventListener( 'focusout', function ( event ) {
+			if ( event.relatedTarget && state.root.contains( event.relatedTarget ) ) {
+				return;
+			}
+
+			state.focused = false;
+			resumeAfterInteraction();
+		} );
 
 		if ( state.root.matches( ':hover' ) ) {
-			pauseForHover();
+			state.hovered = true;
+			pauseForInteraction();
+		}
+
+		if ( state.root.contains( document.activeElement ) ) {
+			state.focused = true;
+			pauseForInteraction();
 		}
 	}
 
@@ -672,8 +721,9 @@
 		var state = {
 			adapter: adapter,
 			button: button,
+			focused: false,
 			hovered: false,
-			hoverPaused: false,
+			interactionPaused: false,
 			paused: false === currentPlaying,
 			root: root,
 			status: status,
@@ -704,7 +754,7 @@
 			setPaused( state, shouldPause, message );
 		} );
 
-		addHoverBehavior( state );
+		addInteractionPauseBehavior( state );
 
 		if ( window.matchMedia ) {
 			var reducedMotion = window.matchMedia( '(prefers-reduced-motion: reduce)' );
