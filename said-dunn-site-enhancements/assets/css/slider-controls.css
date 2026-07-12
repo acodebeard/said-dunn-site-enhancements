@@ -38,16 +38,19 @@
 	color: #1f1f1f;
 }
 
-.sdse-slider-toggle:focus {
+.sdse-slider-toggle:focus,
+[data-sdse-keyboard="true"]:focus {
 	outline: 3px solid #ffbf47;
 	outline-offset: 2px;
 }
 
-.sdse-slider-toggle:focus:not(:focus-visible) {
+.sdse-slider-toggle:focus:not(:focus-visible),
+[data-sdse-keyboard="true"]:focus:not(:focus-visible) {
 	outline: 0;
 }
 
-.sdse-slider-toggle:focus-visible {
+.sdse-slider-toggle:focus-visible,
+[data-sdse-keyboard="true"]:focus-visible {
 	outline: 3px solid #ffbf47;
 	outline-offset: 2px;
 }
@@ -66,7 +69,8 @@
 }
 
 @media (forced-colors: active) {
-	.sdse-slider-toggle {
+	.sdse-slider-toggle,
+	[data-sdse-keyboard="true"] {
 		border-color: ButtonText;
 		background: ButtonFace;
 		color: ButtonText;

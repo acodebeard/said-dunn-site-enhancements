@@ -3,7 +3,7 @@
  * Plugin Name:       Said & Dunn Site Enhancements
  * Plugin URI:        https://github.com/acodebeard/said-dunn-site-enhancements
  * Description:       Site-specific accessibility and theme-compatibility enhancements for Said & Dunn.
- * Version:           1.0.2
+ * Version:           1.0.3
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            acodebeard
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SDSE_VERSION', '1.0.2' );
+define( 'SDSE_VERSION', '1.0.3' );
 define( 'SDSE_PLUGIN_FILE', __FILE__ );
 define( 'SDSE_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SDSE_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

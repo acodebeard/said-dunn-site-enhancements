@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'SDSE_VERSION' ) ) {
-	define( 'SDSE_VERSION', '1.0.2' );
+	define( 'SDSE_VERSION', '1.0.3' );
 }
 
 if ( ! defined( 'SDSE_PLUGIN_FILE' ) ) {
