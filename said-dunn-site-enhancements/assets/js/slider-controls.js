@@ -285,46 +285,30 @@
 	}
 
 	/**
-	 * Returns a native interactive element for one direction control.
+	 * Adds keyboard activation without replacing the theme-owned element.
 	 *
-	 * Theme-owned outer elements remain in place so their click handlers keep
-	 * working. Clicks from an inserted button bubble to the original element.
-	 *
-	 * @param {Element} control Existing direction control.
-	 * @return {Element} Native control to enhance.
+	 * @param {Element} control Control element.
 	 */
-	function getNativeDirectionControl( control ) {
-		if ( isNativeControl( control ) ) {
-			return control;
+	function addKeyboardActivation( control ) {
+		if ( isNativeControl( control ) || 'true' === control.dataset.sdseKeyboard ) {
+			return;
 		}
 
-		var existingButton = control.querySelector( ':scope > .sdse-direction-button' );
-		if ( existingButton ) {
-			return existingButton;
+		control.setAttribute( 'role', 'button' );
+		if ( ! control.hasAttribute( 'tabindex' ) ) {
+			control.setAttribute( 'tabindex', '0' );
 		}
 
-		var nestedControls = control.querySelectorAll( 'button, input, a[href]' );
-		for ( var index = 0; index < nestedControls.length; index += 1 ) {
-			if ( isNativeControl( nestedControls[ index ] ) ) {
-				return nestedControls[ index ];
+		control.addEventListener( 'keydown', function ( event ) {
+			if ( 'Enter' !== event.key && ' ' !== event.key ) {
+				return;
 			}
-		}
 
-		var button = document.createElement( 'button' );
-		button.className = 'sdse-direction-button';
-		button.type = 'button';
+			event.preventDefault();
+			control.click();
+		} );
 
-		while ( control.firstChild ) {
-			button.appendChild( control.firstChild );
-		}
-
-		control.appendChild( button );
-		if ( 'button' === control.getAttribute( 'role' ) ) {
-			control.removeAttribute( 'role' );
-		}
-		control.removeAttribute( 'tabindex' );
-
-		return button;
+		control.dataset.sdseKeyboard = 'true';
 	}
 
 	/**
@@ -335,28 +319,19 @@
 	 * @param {string}  controls Slider root ID.
 	 */
 	function enhanceDirectionControl( control, label, controls ) {
-		var nativeControl = getNativeDirectionControl( control );
-
-		if ( 'button' === nativeControl.tagName.toLowerCase() && ! nativeControl.hasAttribute( 'type' ) ) {
-			nativeControl.setAttribute( 'type', 'button' );
+		if ( 'button' === control.tagName.toLowerCase() && ! control.hasAttribute( 'type' ) ) {
+			control.setAttribute( 'type', 'button' );
 		}
 
-		if ( ! hasAccessibleName( nativeControl ) ) {
-			if ( nativeControl !== control && control.getAttribute( 'aria-label' ) ) {
-				nativeControl.setAttribute( 'aria-label', control.getAttribute( 'aria-label' ) );
-			} else if ( nativeControl !== control && control.getAttribute( 'aria-labelledby' ) ) {
-				nativeControl.setAttribute( 'aria-labelledby', control.getAttribute( 'aria-labelledby' ) );
-			} else {
-				nativeControl.setAttribute( 'aria-label', label );
-			}
+		if ( ! hasAccessibleName( control ) ) {
+			control.setAttribute( 'aria-label', label );
 		}
 
-		if ( ! nativeControl.hasAttribute( 'aria-controls' ) ) {
-			nativeControl.setAttribute(
-				'aria-controls',
-				control.getAttribute( 'aria-controls' ) || controls
-			);
+		if ( ! control.hasAttribute( 'aria-controls' ) ) {
+			control.setAttribute( 'aria-controls', controls );
 		}
+
+		addKeyboardActivation( control );
 	}
 
 	/**

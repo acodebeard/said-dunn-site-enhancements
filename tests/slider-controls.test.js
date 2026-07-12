@@ -94,19 +94,16 @@ async function createPage( { broken = false, supported = true, reducedMotion = f
 test( 'enhances direction controls and connects a verified pause API', async () => {
 	const page = await createPage();
 	const previous = page.root.querySelector( '.slider-prev' );
-	const previousButton = previous.querySelector( '.sdse-direction-button' );
 	const next = page.root.querySelector( '.slider-next' );
 	const toggle = page.root.querySelector( '.sdse-slider-toggle' );
 
 	assert.equal( page.root.getAttribute( 'role' ), 'region' );
 	assert.equal( page.root.getAttribute( 'aria-label' ), 'Featured content slider' );
-	assert.equal( previous.getAttribute( 'role' ), null );
-	assert.equal( previous.getAttribute( 'tabindex' ), null );
-	assert.equal( previousButton.tagName, 'BUTTON' );
-	assert.equal( previousButton.type, 'button' );
-	assert.equal( previousButton.textContent, '‹' );
-	assert.equal( previousButton.getAttribute( 'aria-label' ), 'Previous slide' );
-	assert.equal( previousButton.getAttribute( 'aria-controls' ), page.root.id );
+	assert.equal( previous.getAttribute( 'role' ), 'button' );
+	assert.equal( previous.getAttribute( 'tabindex' ), '0' );
+	assert.equal( previous.getAttribute( 'aria-label' ), 'Previous slide' );
+	assert.equal( previous.getAttribute( 'aria-controls' ), page.root.id );
+	assert.equal( previous.querySelector( 'button' ), null );
 	assert.equal( next.getAttribute( 'aria-label' ), 'Next slide' );
 	assert.equal( toggle.textContent, 'Pause' );
 	assert.equal( toggle.getAttribute( 'aria-label' ), 'Pause slideshow' );
@@ -115,7 +112,7 @@ test( 'enhances direction controls and connects a verified pause API', async () 
 	previous.addEventListener( 'click', () => {
 		previousClicks += 1;
 	} );
-	previousButton.click();
+	previous.dispatchEvent( new page.window.KeyboardEvent( 'keydown', { key: 'Enter' } ) );
 	assert.equal( previousClicks, 1 );
 
 	toggle.click();
@@ -138,8 +135,9 @@ test( 'does not render a fake Pause/Play control for an unsupported slider', asy
 	const page = await createPage( { supported: false } );
 
 	assert.equal( page.root.querySelector( '.sdse-slider-toggle' ), null );
-	assert.equal( page.root.querySelector( '.slider-prev' ).getAttribute( 'role' ), null );
-	assert.equal( page.root.querySelector( '.slider-prev button' ).getAttribute( 'aria-label' ), 'Previous slide' );
+	assert.equal( page.root.querySelector( '.slider-prev' ).getAttribute( 'role' ), 'button' );
+	assert.equal( page.root.querySelector( '.slider-prev' ).getAttribute( 'aria-label' ), 'Previous slide' );
+	assert.equal( page.root.querySelector( '.slider-prev button' ), null );
 	assert.equal( page.root.querySelector( '.slider-next' ).getAttribute( 'aria-label' ), 'Next slide' );
 	assert.equal( page.root.querySelector( 'article' ).hasAttribute( 'inert' ), false );
 	assert.equal( page.root.querySelector( 'article a' ).hasAttribute( 'tabindex' ), false );
@@ -177,7 +175,7 @@ test( 'pauses on hover and does not resume after a persistent pause', async () =
 
 test( 'pauses while focus is inside and resumes only after focus leaves', async () => {
 	const page = await createPage();
-	const previous = page.root.querySelector( '.sdse-direction-button' );
+	const previous = page.root.querySelector( '.slider-prev' );
 	const next = page.root.querySelector( '.slider-next' );
 	const toggle = page.root.querySelector( '.sdse-slider-toggle' );
 	const outside = page.window.document.createElement( 'button' );
@@ -294,13 +292,14 @@ test( 'integrates with the BlogData homemain Swiper slider', async () => {
 	await new Promise( ( resolve ) => nativeSetTimeout( resolve, 50 ) );
 
 	const toggle = root.querySelector( '.sdse-slider-toggle' );
-	const previousButton = root.querySelector( '.swiper-button-prev .sdse-direction-button' );
-	const nextButton = root.querySelector( '.swiper-button-next .sdse-direction-button' );
+	const previousButton = root.querySelector( '.swiper-button-prev' );
+	const nextButton = root.querySelector( '.swiper-button-next' );
 	assert.equal( root.getAttribute( 'aria-label' ), 'Featured content slider' );
-	assert.equal( root.querySelector( '.swiper-button-prev' ).getAttribute( 'role' ), null );
-	assert.equal( root.querySelector( '.swiper-button-next' ).getAttribute( 'role' ), null );
+	assert.equal( previousButton.getAttribute( 'role' ), 'button' );
+	assert.equal( nextButton.getAttribute( 'role' ), 'button' );
 	assert.equal( previousButton.getAttribute( 'aria-label' ), 'Previous slide' );
 	assert.equal( nextButton.getAttribute( 'aria-label' ), 'Next slide' );
+	assert.equal( root.querySelector( '.sdse-direction-button' ), null );
 	assert.equal( toggle.textContent, 'Pause' );
 	assert.equal( toggle.getAttribute( 'aria-label' ), 'Pause slideshow' );
 	assert.equal( root.swiper.params.autoplay.delay, 7000 );
