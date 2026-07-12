@@ -17,7 +17,7 @@ async function createPage( { broken = false, supported = true, reducedMotion = f
 		<html><body>
 			<div class="featured-slider">
 				<div class="featured-content-inner">
-					<article>First</article>
+					<article><a href="/first">First</a></article>
 					<article>Second</article>
 				</div>
 				<div class="slider-prev">‹</div>
@@ -123,6 +123,8 @@ test( 'does not render a fake Pause/Play control for an unsupported slider', asy
 	assert.equal( page.root.querySelector( '.sdse-slider-toggle' ), null );
 	assert.equal( page.root.querySelector( '.slider-prev' ).getAttribute( 'aria-label' ), 'Previous slide' );
 	assert.equal( page.root.querySelector( '.slider-next' ).getAttribute( 'aria-label' ), 'Next slide' );
+	assert.equal( page.root.querySelector( 'article' ).hasAttribute( 'inert' ), false );
+	assert.equal( page.root.querySelector( 'article a' ).hasAttribute( 'tabindex' ), false );
 
 } );
 
@@ -173,8 +175,9 @@ test( 'integrates with the BlogData homemain Swiper slider', async () => {
 		<html><body>
 			<div class="homemain bs swiper-container">
 				<div class="swiper-wrapper">
-					<div class="swiper-slide">First post</div>
-					<div class="swiper-slide">Second post</div>
+					<div class="swiper-slide swiper-slide-active"><a href="/first">First post</a></div>
+					<div class="swiper-slide"><a href="/second" tabindex="2">Second post</a></div>
+					<div class="swiper-slide swiper-slide-duplicate"><a href="/duplicate">Duplicate post</a></div>
 				</div>
 				<div class="swiper-button-next"></div>
 				<div class="swiper-button-prev"></div>
@@ -189,6 +192,10 @@ test( 'integrates with the BlogData homemain Swiper slider', async () => {
 	const { window } = dom;
 	const nativeSetTimeout = window.setTimeout.bind( window );
 	const root = window.document.querySelector( '.homemain' );
+	const slides = root.querySelectorAll( '.swiper-slide' );
+	const firstLink = root.querySelector( 'a[href="/first"]' );
+	const secondLink = root.querySelector( 'a[href="/second"]' );
+	const duplicateLink = root.querySelector( 'a[href="/duplicate"]' );
 	const calls = { pause: 0, start: 0, stop: 0 };
 
 	window.setTimeout = ( callback, delay, ...args ) => nativeSetTimeout( callback, Math.min( delay, 10 ), ...args );
@@ -244,6 +251,31 @@ test( 'integrates with the BlogData homemain Swiper slider', async () => {
 	assert.equal( root.swiper.params.autoplay.delay, 7000 );
 	assert.equal( calls.stop, 1 );
 	assert.equal( calls.start, 1 );
+	assert.equal( slides[ 0 ].hasAttribute( 'inert' ), false );
+	assert.equal( firstLink.hasAttribute( 'tabindex' ), false );
+	assert.equal( slides[ 1 ].hasAttribute( 'inert' ), true );
+	assert.equal( secondLink.getAttribute( 'tabindex' ), '-1' );
+	assert.equal( slides[ 2 ].hasAttribute( 'inert' ), true );
+	assert.equal( duplicateLink.getAttribute( 'tabindex' ), '-1' );
+
+	const delayedLink = window.document.createElement( 'a' );
+	delayedLink.href = '/delayed';
+	delayedLink.textContent = 'Delayed link';
+	slides[ 1 ].appendChild( delayedLink );
+	await new Promise( ( resolve ) => nativeSetTimeout( resolve, 50 ) );
+	assert.equal( delayedLink.getAttribute( 'tabindex' ), '-1' );
+
+	slides[ 0 ].classList.remove( 'swiper-slide-active' );
+	slides[ 1 ].classList.add( 'swiper-slide-active' );
+	await new Promise( ( resolve ) => nativeSetTimeout( resolve, 50 ) );
+
+	assert.equal( slides[ 0 ].hasAttribute( 'inert' ), true );
+	assert.equal( firstLink.getAttribute( 'tabindex' ), '-1' );
+	assert.equal( slides[ 1 ].hasAttribute( 'inert' ), false );
+	assert.equal( secondLink.getAttribute( 'tabindex' ), '2' );
+	assert.equal( delayedLink.hasAttribute( 'tabindex' ), false );
+	assert.equal( slides[ 2 ].hasAttribute( 'inert' ), true );
+	assert.equal( duplicateLink.getAttribute( 'tabindex' ), '-1' );
 
 	toggle.click();
 	assert.equal( calls.stop, 2 );

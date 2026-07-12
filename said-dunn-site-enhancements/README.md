@@ -5,7 +5,7 @@ that cannot be configured through the active classic theme or WordPress.com.
 
 Project site: <https://github.com/acodebeard/said-dunn-site-enhancements>
 
-- Version: 1.0.2
+- Version: 1.0.3
 - Requires WordPress: 6.0 or later
 - Requires PHP: 7.4 or later
 - License: GPL-2.0-or-later
@@ -23,6 +23,8 @@ When enabled, this module loads only on the front page and posts page. It:
   Previous and Next controls without replacing existing theme wording.
 - Makes non-native direction controls keyboard operable while preserving native
   links and buttons.
+- Keeps links and controls in inactive slides, including looped clones, out of
+  the keyboard tab order and restores them when their slide becomes current.
 - Adds a visible Pause/Play button only when a real, supported autoplay API is
   present.
 - Pauses autoplay while a pointer is over the slider and resumes on pointer
@@ -85,6 +87,11 @@ assets under `assets/`. Register the class in the small modules array in
 `SDSE_Settings`; do not add raw code, selectors, JSON, or a snippets interface.
 
 ## Changelog
+
+### 1.0.3
+
+- Limited keyboard navigation to links and controls in the current slide.
+- Restored theme-supplied tab-order values when a slide becomes current.
 
 ### 1.0.2
 

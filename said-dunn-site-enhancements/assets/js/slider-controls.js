@@ -6,6 +6,7 @@
 	var slideDelay = parseInt( settings.slideDelay, 10 );
 	var initializedRoots = new WeakMap();
 	var failedRoots = new WeakSet();
+	var focusManagedRoots = new WeakSet();
 	var rootId = 0;
 	var scanScheduled = false;
 
@@ -57,6 +58,169 @@
 		'.owl-item:not(.cloned)',
 		'[data-slide-index]'
 	].join( ',' );
+
+	var focusSlideSelector = [
+		'.featured-content-inner > article',
+		'.slides > li',
+		'.slick-slide',
+		'.swiper-slide',
+		'.splide__slide',
+		'.owl-item',
+		'[data-slide-index]'
+	].join( ',' );
+
+	var activeSlideSelector = [
+		'.swiper-slide-active',
+		'.slick-current',
+		'.flex-active-slide',
+		'.splide__slide.is-active',
+		'.owl-item.active',
+		'[aria-current="true"]',
+		'[aria-current="slide"]',
+		'[aria-hidden="false"]'
+	].join( ',' );
+
+	var focusableSelector = [
+		'a[href]',
+		'area[href]',
+		'button:not([disabled])',
+		'input:not([disabled]):not([type="hidden"])',
+		'select:not([disabled])',
+		'textarea:not([disabled])',
+		'iframe',
+		'object',
+		'embed',
+		'[contenteditable="true"]',
+		'[tabindex]'
+	].join( ',' );
+
+	/**
+	 * Returns the focusable elements in a slide, including the slide itself.
+	 *
+	 * @param {Element} slide Slide element.
+	 * @return {Element[]} Focusable elements.
+	 */
+	function getFocusableElements( slide ) {
+		var elements = Array.from( slide.querySelectorAll( focusableSelector ) );
+
+		if ( slide.matches( focusableSelector ) ) {
+			elements.unshift( slide );
+		}
+
+		return elements;
+	}
+
+	/**
+	 * Removes one slide from the tab order without losing theme tabindex values.
+	 *
+	 * @param {Element} slide Inactive slide.
+	 */
+	function disableSlideFocus( slide ) {
+		if ( ! slide.hasAttribute( 'inert' ) ) {
+			slide.setAttribute( 'inert', '' );
+			slide.dataset.sdseManagedInert = 'true';
+		}
+
+		getFocusableElements( slide ).forEach( function ( element ) {
+			if ( 'true' !== element.dataset.sdseTabindexManaged ) {
+				if ( element.hasAttribute( 'tabindex' ) ) {
+					element.dataset.sdseOriginalTabindex = element.getAttribute( 'tabindex' );
+				}
+
+				element.dataset.sdseTabindexManaged = 'true';
+			}
+
+			element.setAttribute( 'tabindex', '-1' );
+		} );
+	}
+
+	/**
+	 * Restores focus behavior previously changed by this module.
+	 *
+	 * @param {Element} slide Current slide.
+	 */
+	function restoreSlideFocus( slide ) {
+		if ( 'true' === slide.dataset.sdseManagedInert ) {
+			slide.removeAttribute( 'inert' );
+			delete slide.dataset.sdseManagedInert;
+		}
+
+		slide.querySelectorAll( '[data-sdse-tabindex-managed="true"]' ).forEach( function ( element ) {
+			if ( element.hasAttribute( 'data-sdse-original-tabindex' ) ) {
+				element.setAttribute( 'tabindex', element.dataset.sdseOriginalTabindex );
+				delete element.dataset.sdseOriginalTabindex;
+			} else {
+				element.removeAttribute( 'tabindex' );
+			}
+
+			delete element.dataset.sdseTabindexManaged;
+		} );
+
+		if ( slide.matches( '[data-sdse-tabindex-managed="true"]' ) ) {
+			if ( slide.hasAttribute( 'data-sdse-original-tabindex' ) ) {
+				slide.setAttribute( 'tabindex', slide.dataset.sdseOriginalTabindex );
+				delete slide.dataset.sdseOriginalTabindex;
+			} else {
+				slide.removeAttribute( 'tabindex' );
+			}
+
+			delete slide.dataset.sdseTabindexManaged;
+		}
+	}
+
+	/**
+	 * Keeps only the explicitly current slide in the keyboard tab order.
+	 *
+	 * If the theme exposes no current-slide state, all slides remain available.
+	 *
+	 * @param {Element} root Slider root.
+	 */
+	function updateSlideFocusOrder( root ) {
+		var slides = Array.from( root.querySelectorAll( focusSlideSelector ) );
+		var activeSlides = slides.filter( function ( slide ) {
+			return slide.matches( activeSlideSelector );
+		} );
+
+		if ( 0 === activeSlides.length ) {
+			slides.forEach( restoreSlideFocus );
+			return;
+		}
+
+		slides.forEach( function ( slide ) {
+			if ( activeSlides.includes( slide ) ) {
+				restoreSlideFocus( slide );
+			} else {
+				disableSlideFocus( slide );
+			}
+		} );
+	}
+
+	/**
+	 * Watches one slider for current-slide changes.
+	 *
+	 * @param {Element} root Slider root.
+	 */
+	function addSlideFocusManagement( root ) {
+		if ( focusManagedRoots.has( root ) ) {
+			return;
+		}
+
+		focusManagedRoots.add( root );
+		updateSlideFocusOrder( root );
+
+		if ( 'MutationObserver' in window ) {
+			var focusObserver = new MutationObserver( function () {
+				updateSlideFocusOrder( root );
+			} );
+
+			focusObserver.observe( root, {
+				attributeFilter: [ 'aria-current', 'aria-hidden', 'class' ],
+				attributes: true,
+				childList: true,
+				subtree: true
+			} );
+		}
+	}
 
 	/**
 	 * Returns a localized label with a safe English fallback.
@@ -591,6 +755,7 @@
 
 		enhanceDirection( root, previousSelector, getLabel( 'previous', 'Previous slide' ), controls );
 		enhanceDirection( root, nextSelector, getLabel( 'next', 'Next slide' ), controls );
+		addSlideFocusManagement( root );
 
 		if ( initializedRoots.has( root ) || failedRoots.has( root ) ) {
 			return;
