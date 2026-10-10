@@ -9,6 +9,6 @@
     "check:js": "node --check said-dunn-site-enhancements/assets/js/slider-controls.js"
   },
   "devDependencies": {
-    "jsdom": "^29.1.1"
+    "jsdom": "^30.1.2"
   }
 }
